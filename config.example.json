@@ -1,0 +1,27 @@
+{
+  "app": {
+    "name": "NAWNAW-API",
+    "host": "localhost",
+    "port": "8080"
+  },
+  "database": {
+    "driver": "",
+    "host": "",
+    "port": "",
+    "username": "",
+    "password": "",
+    "database": "",
+    "max_idle_conns": 0,
+    "max_open_conns": 0,
+    "conn_max_lifetime": 0
+  },
+  "migration": {
+    "dir": "db/migrations"
+  },
+  "secret": {
+    "jwt": "",
+    "encrypt": "",
+    "access_expired": 0,
+    "refresh_expired": 0
+  }
+}
