@@ -3,10 +3,11 @@ package datatypes
 import (
 	"database/sql"
 	"database/sql/driver"
+	"encoding/base64"
 	"encoding/json"
 	"strconv"
 
-	"golang.org/x/crypto/bcrypt"
+	"github.com/nawafilhusnul/NAWNAW-API/common/vars"
 )
 
 type ID int64
@@ -14,11 +15,27 @@ type ID int64
 // MarshalJSON implements the json.Marshaler interface for ID.
 // It marshals the ID value to JSON after encrypting it using bcrypt.
 func (id ID) MarshalJSON() ([]byte, error) {
-	hashedID, err := bcrypt.GenerateFromPassword([]byte(string(rune(id))), bcrypt.DefaultCost)
+	encodedID := encryptID(id)
+	return json.Marshal(encodedID)
+}
+
+func encryptID(id ID) string {
+	secret := vars.ENCRYPT_SECRET
+	encodedID := base64.StdEncoding.EncodeToString([]byte(secret + strconv.FormatInt(int64(id), 10)))
+	return encodedID
+}
+
+func decryptID(hashedID string) (ID, error) {
+	decodedID, err := base64.StdEncoding.DecodeString(hashedID)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	return json.Marshal(string(hashedID))
+	secret := vars.ENCRYPT_SECRET
+	parsedID, err := strconv.ParseInt(string(decodedID[len(secret):]), 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return ID(parsedID), nil
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface for ID.
@@ -28,11 +45,13 @@ func (id *ID) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &hashedID); err != nil {
 		return err
 	}
-	parsedID, err := strconv.ParseInt(hashedID, 10, 64)
+
+	parsedID, err := decryptID(hashedID)
 	if err != nil {
 		return err
 	}
-	*id = ID(parsedID)
+
+	*id = parsedID
 	return nil
 }
 
@@ -54,4 +73,12 @@ func (id ID) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return int64(id), nil
+}
+
+func ParseID(id string) (int, error) {
+	parsedID, err := decryptID(id)
+	if err != nil {
+		return 0, err
+	}
+	return int(parsedID), nil
 }

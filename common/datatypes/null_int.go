@@ -50,7 +50,7 @@ func (ni *NullInt) UnmarshalJSON(data []byte) error {
 	}
 	if i != nil {
 		ni.Int = *i
-		ni.Valid = true
+		ni.Valid = *i != 0
 	} else {
 		ni.Valid = false
 	}

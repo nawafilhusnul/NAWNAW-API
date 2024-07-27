@@ -3,11 +3,15 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/nawafilhusnul/big-app/common/ctx"
-	"github.com/nawafilhusnul/big-app/config"
-	"github.com/nawafilhusnul/big-app/routes"
+	"github.com/labstack/echo/v4/middleware"
+	"github.com/nawafilhusnul/NAWNAW-API/common/ctx"
+	"github.com/nawafilhusnul/NAWNAW-API/common/response"
+	customValidator "github.com/nawafilhusnul/NAWNAW-API/common/validator"
+	"github.com/nawafilhusnul/NAWNAW-API/config"
+	"github.com/nawafilhusnul/NAWNAW-API/routes"
 	"github.com/spf13/viper"
 )
 
@@ -25,8 +29,22 @@ func main() {
 	dbConfig := config.NewDatabase()
 	db := dbConfig.GetDB()
 
+	// error handler
+	e.HTTPErrorHandler = response.CustomHTTPErrorHandler
+
+	// Initialize validator
+	e.Validator = customValidator.NewCustomValidator()
+
 	// Middleware
-	e.Use(ctx.NewCtx)
+	e.Use(
+		middleware.Recover(),
+		middleware.RemoveTrailingSlashWithConfig(
+			middleware.TrailingSlashConfig{
+				RedirectCode: http.StatusMovedPermanently,
+			},
+		),
+		ctx.NewCtx,
+	)
 
 	// Routes
 	routes.RegisterV1AuthRoutes(e, db)

@@ -1,0 +1,2 @@
+ALTER TABLE users MODIFY COLUMN created_by INT DEFAULT 0 COMMENT '0 means system or auto generated';
+ALTER TABLE users MODIFY COLUMN updated_by INT DEFAULT 0 COMMENT '0 means system or auto generated';

@@ -49,7 +49,7 @@ func (ns *NullString) UnmarshalJSON(data []byte) error {
 	}
 	if s != nil {
 		ns.String = *s
-		ns.Valid = true
+		ns.Valid = *s != ""
 	} else {
 		ns.Valid = false
 	}

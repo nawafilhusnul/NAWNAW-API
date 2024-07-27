@@ -3,6 +3,9 @@ package response
 import (
 	"encoding/json"
 	"errors"
+	"net/http"
+
+	"github.com/nawafilhusnul/NAWNAW-API/common/constants"
 )
 
 type response struct {
@@ -27,6 +30,13 @@ func (r *response) WithError(err error) *response {
 	resErr := &responseError{}
 	if errors.As(err, &resErr) {
 		r.meta.error = *resErr
+		return r
+	}
+
+	r.meta.error = responseError{
+		statusCode: http.StatusBadRequest,
+		errorCode:  constants.ErrorCodeBadRequest,
+		message:    err.Error(),
 	}
 
 	return r

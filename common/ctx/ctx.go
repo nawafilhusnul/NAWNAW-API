@@ -7,7 +7,10 @@ import (
 )
 
 type ContextUser struct {
-	Name string
+	UserID    int
+	Roles     map[string]bool
+	Platforms map[string]bool
+	Timezone  string
 }
 
 type Ctx struct {

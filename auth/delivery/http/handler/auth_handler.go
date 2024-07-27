@@ -4,10 +4,10 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	auth "github.com/nawafilhusnul/big-app/auth/usecase"
-	"github.com/nawafilhusnul/big-app/common/ctx"
-	"github.com/nawafilhusnul/big-app/common/response"
-	"github.com/nawafilhusnul/big-app/model"
+	auth "github.com/nawafilhusnul/NAWNAW-API/auth/usecase"
+	"github.com/nawafilhusnul/NAWNAW-API/common/ctx"
+	"github.com/nawafilhusnul/NAWNAW-API/common/response"
+	"github.com/nawafilhusnul/NAWNAW-API/model"
 )
 
 type handler struct {
@@ -21,8 +21,22 @@ func NewAuthHandler(uc auth.Usecase) *handler {
 func (h *handler) Login() echo.HandlerFunc {
 	return echo.HandlerFunc(func(c echo.Context) error {
 		ctx := c.(*ctx.Ctx)
-		h.uc.Login(ctx, "email", "password")
-		return nil
+		req := &model.LoginRequest{}
+
+		if err := c.Bind(req); err != nil {
+			return c.JSON(http.StatusBadRequest, response.NewResponse().WithError(err))
+		}
+
+		if err := c.Validate(req); err != nil {
+			return c.JSON(http.StatusBadRequest, response.NewResponse().WithError(err))
+		}
+
+		user, err := h.uc.Login(ctx, req.Identifier, req.Password, req.Timezone)
+		if err != nil {
+			return c.JSON(response.GetErrorStatusCode(err), response.NewResponse().WithError(err))
+		}
+
+		return c.JSON(http.StatusOK, response.NewResponse().WithData(user, "Login success"))
 	})
 }
 
@@ -32,15 +46,34 @@ func (h *handler) Register() echo.HandlerFunc {
 		req := &model.Auth{}
 
 		if err := c.Bind(req); err != nil {
-			return c.JSON(http.StatusBadRequest, err)
+			return c.JSON(http.StatusBadRequest, response.NewResponse().WithError(err))
+		}
+
+		if err := c.Validate(req); err != nil {
+			return c.JSON(http.StatusBadRequest, response.NewResponse().WithError(err))
 		}
 
 		err := h.uc.Register(ctx, req)
 		if err != nil {
-			return c.JSON(http.StatusOK, response.NewResponse().WithData(1, "success"))
-			// return c.JSON(response.GetErrorStatusCode(err), response.NewResponse().WithError(err))
+			return c.JSON(response.GetErrorStatusCode(err), response.NewResponse().WithError(err))
 		}
 
-		return c.JSON(http.StatusOK, response.NewResponse().WithData("OK!", "Register success"))
+		return c.JSON(http.StatusOK, response.NewResponse().WithData(map[string]interface{}{
+			"id": req.ID,
+		}, "Register success"))
+	})
+}
+
+func (h *handler) GetOne() echo.HandlerFunc {
+	return echo.HandlerFunc(func(c echo.Context) error {
+		ctx := c.(*ctx.Ctx)
+
+		id := ctx.GetUser().UserID
+		user, err := h.uc.GetOne(ctx, id)
+		if err != nil {
+			return c.JSON(response.GetErrorStatusCode(err), response.NewResponse().WithError(err))
+		}
+
+		return c.JSON(http.StatusOK, response.NewResponse().WithData(user, "Get one success"))
 	})
 }

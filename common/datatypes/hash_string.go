@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
-	"errors"
 )
 
 type HashString string
@@ -12,7 +11,7 @@ type HashString string
 // MarshalJSON implements the json.Marshaler interface for HashString.
 // It marshals the HashString value to JSON as "***".
 func (hs HashString) MarshalJSON() ([]byte, error) {
-	return json.Marshal("* **")
+	return json.Marshal("***")
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface for HashString.
@@ -22,9 +21,7 @@ func (hs *HashString) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &str); err != nil {
 		return err
 	}
-	if str != "* * *" {
-		return errors.New("invalid value for HashString")
-	}
+
 	*hs = HashString(str)
 	return nil
 }
