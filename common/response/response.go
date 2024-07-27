@@ -18,10 +18,23 @@ type meta struct {
 	info  responseInfo  `json:"info,omitempty"`
 }
 
+// NewResponse creates a new response instance.
+// Usage example:
+//
+//	resp := NewResponse()
+//	fmt.Println(resp)
 func NewResponse() *response {
 	return &response{}
 }
 
+// WithError sets the error information in the response.
+// If the provided error is nil, it returns the response as is.
+// If the error is of type responseError, it sets it in the meta field.
+// Otherwise, it creates a new responseError with a BadRequest status code and sets it in the meta field.
+// Usage example:
+//
+//	resp := NewResponse().WithError(errors.New("an error occurred"))
+//	fmt.Println(resp)
 func (r *response) WithError(err error) *response {
 	if err == nil {
 		return r
@@ -42,6 +55,12 @@ func (r *response) WithError(err error) *response {
 	return r
 }
 
+// WithData sets the data and informational message in the response.
+// If there is already an error set in the meta field, it returns the response as is.
+// Usage example:
+//
+//	resp := NewResponse().WithData(map[string]string{"key": "value"}, "Operation successful")
+//	fmt.Println(resp)
 func (r *response) WithData(data any, message string) *response {
 	if r.meta.error != (responseError{}) {
 		return r
@@ -55,6 +74,15 @@ func (r *response) WithData(data any, message string) *response {
 	return r
 }
 
+// MarshalJSON customizes the JSON representation of the response.
+// Usage example:
+//
+//	resp := NewResponse().WithData(map[string]string{"key": "value"}, "Operation successful")
+//	jsonData, err := resp.MarshalJSON()
+//	if err != nil {
+//	    log.Fatal(err)
+//	}
+//	fmt.Println(string(jsonData))
 func (r response) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
 		Meta meta `json:"meta"`
@@ -65,10 +93,30 @@ func (r response) MarshalJSON() ([]byte, error) {
 	})
 }
 
+// UnmarshalJSON customizes the JSON deserialization of the response.
+// It populates the response with the data from the JSON.
+// Usage example:
+//
+//	jsonData := []byte(`{"meta": {"info": {"message": "Operation successful"}}, "data": {"key": "value"}}`)
+//	var resp response
+//	err := resp.UnmarshalJSON(jsonData)
+//	if err != nil {
+//	    log.Fatal(err)
+//	}
+//	fmt.Println(resp)
 func (r *response) UnmarshalJSON(data []byte) error {
 	return json.Unmarshal(data, r)
 }
 
+// MarshalJSON customizes the JSON representation of the meta.
+// Usage example:
+//
+//	m := meta{info: responseInfo{message: "Operation successful"}}
+//	jsonData, err := m.MarshalJSON()
+//	if err != nil {
+//	    log.Fatal(err)
+//	}
+//	fmt.Println(string(jsonData))
 func (m meta) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
 		Error responseError `json:"error"`
@@ -79,6 +127,17 @@ func (m meta) MarshalJSON() ([]byte, error) {
 	})
 }
 
+// UnmarshalJSON customizes the JSON deserialization of the meta.
+// It populates the meta with the data from the JSON.
+// Usage example:
+//
+//	jsonData := []byte(`{"error": {"status_code": 400, "code": "bad_request", "message": "An error occurred"}, "info": {"message": "Operation successful"}}`)
+//	var m meta
+//	err := m.UnmarshalJSON(jsonData)
+//	if err != nil {
+//	    log.Fatal(err)
+//	}
+//	fmt.Println(m)
 func (m *meta) UnmarshalJSON(data []byte) error {
 	return json.Unmarshal(data, m)
 }

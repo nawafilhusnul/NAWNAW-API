@@ -9,6 +9,18 @@ import (
 	"gorm.io/gorm"
 )
 
+// RegisterV1AuthRoutes registers the authentication routes for version 1 of the API.
+// It sets up the necessary repository, usecase, and handler for authentication.
+//
+// Example usage:
+// e := echo.New()
+// db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+//
+//	if err != nil {
+//	    log.Fatal(err)
+//	}
+//
+// routes.RegisterV1AuthRoutes(e, db)
 func RegisterV1AuthRoutes(e *echo.Echo, db *gorm.DB) {
 	authRepo := authRepo.NewAuthMySQLRepo(db)
 	authUsecase := authUsecase.NewAuthUsecase(authRepo)
@@ -16,7 +28,7 @@ func RegisterV1AuthRoutes(e *echo.Echo, db *gorm.DB) {
 
 	v1 := e.Group("/api/v1")
 	g := v1.Group("/auths")
-	g.POST("/login", authHandler.Login())
-	g.POST("/register", authHandler.Register())
-	g.GET("", authHandler.GetOne(), middleware.Session())
+	g.POST("/login", authHandler.Login())                 // Login route for user authentication
+	g.POST("/register", authHandler.Register())           // Register route for new user registration
+	g.GET("", authHandler.GetOne(), middleware.Session()) // GetOne route to fetch user details with session middleware
 }

@@ -13,6 +13,9 @@ import (
 	"github.com/nawafilhusnul/NAWNAW-API/common/vars"
 )
 
+// Session is a middleware function that checks for a valid JWT token in the Authorization header of the request.
+// If the token is valid, it sets the user information in the context and calls the next handler.
+// If the token is missing or invalid, it returns an unauthorized error response.
 func Session() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -34,6 +37,9 @@ func Session() echo.MiddlewareFunc {
 	}
 }
 
+// setInfoToCtx parses the JWT token and extracts user information from the claims.
+// It sets the user information in the context and returns the updated context.
+// If the token is invalid or any required claim is missing, it returns an unauthorized error response.
 func setInfoToCtx(c echo.Context, tk string) (*ctx.Ctx, error) {
 	claims := &jwt.MapClaims{}
 	jwtToken, err := jwt.ParseWithClaims(tk, claims, func(token *jwt.Token) (interface{}, error) {

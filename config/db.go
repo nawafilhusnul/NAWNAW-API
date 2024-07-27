@@ -24,6 +24,8 @@ type Database struct {
 
 // getDatabaseConfig reads the database configuration from the config file using viper
 // and returns a Database struct with the configuration values.
+// Usage example:
+// dbConfig := getDatabaseConfig()
 func getDatabaseConfig() *Database {
 	return &Database{
 		Host:            viper.GetString("database.host"),
@@ -40,12 +42,16 @@ func getDatabaseConfig() *Database {
 
 // NewDatabase initializes a new Database struct by reading the configuration
 // from the config file and returns the struct.
+// Usage example:
+// db := NewDatabase()
 func NewDatabase() *Database {
 	return getDatabaseConfig()
 }
 
 // getDSN constructs the Data Source Name (DSN) string for connecting to the MySQL database
 // using the configuration values stored in the Database struct.
+// Usage example:
+// dsn := db.getDSN()
 func (d *Database) getDSN() string {
 	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", d.Username, d.Password, d.Host, d.Port, d.Database)
 }
@@ -53,6 +59,8 @@ func (d *Database) getDSN() string {
 // GetDB establishes a connection to the MySQL database using GORM, configures the connection pool
 // settings, and returns the GORM DB object. If there is an error during the connection process,
 // the function logs the error and terminates the application.
+// Usage example:
+// db := dbConfig.GetDB()
 func (d *Database) GetDB() *gorm.DB {
 	db, err := gorm.Open(mysql.Open(d.getDSN()), &gorm.Config{})
 	if err != nil {

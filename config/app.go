@@ -21,6 +21,11 @@ type Secret struct {
 }
 
 // LoadAppConfig loads the app configuration from the config file
+// It reads the configuration values using viper and sets them in the AppConfig struct
+// It also sets the global variables in the vars package with the secret values
+// Usage example:
+//
+//	appConfig := LoadAppConfig()
 func LoadAppConfig() *AppConfig {
 	appCfg := &AppConfig{
 		Name: viper.GetString("app.name"),

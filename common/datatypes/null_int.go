@@ -12,7 +12,8 @@ type NullInt struct {
 }
 
 // Scan implements the Scanner interface for NullInt.
-// It scans a value from a database driver.
+// It scans a value from a database driver and assigns it to the NullInt struct.
+// If the scanned value is null, the Valid field is set to false.
 func (ni *NullInt) Scan(value interface{}) error {
 	var i sql.NullInt64
 	if err := i.Scan(value); err != nil {
@@ -24,6 +25,8 @@ func (ni *NullInt) Scan(value interface{}) error {
 
 // Value implements the driver Valuer interface for NullInt.
 // It returns the int value or nil if the int is not valid.
+// This method is used to convert the NullInt struct to a driver.Value
+// that can be stored in a database.
 func (ni NullInt) Value() (driver.Value, error) {
 	if !ni.Valid {
 		return nil, nil
@@ -33,6 +36,7 @@ func (ni NullInt) Value() (driver.Value, error) {
 
 // MarshalJSON implements the json.Marshaler interface for NullInt.
 // It marshals the int value to JSON or null if the int is not valid.
+// This method is used to convert the NullInt struct to a JSON representation.
 func (ni NullInt) MarshalJSON() ([]byte, error) {
 	if !ni.Valid {
 		return json.Marshal(nil)
@@ -43,6 +47,7 @@ func (ni NullInt) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements the json.Unmarshaler interface for NullInt.
 // It unmarshals a JSON value into the NullInt struct.
+// If the JSON value is null, the Valid field is set to false.
 func (ni *NullInt) UnmarshalJSON(data []byte) error {
 	var i *int
 	if err := json.Unmarshal(data, &i); err != nil {
@@ -61,6 +66,11 @@ func (ni *NullInt) UnmarshalJSON(data []byte) error {
 // SetNullInt sets the int and valid flag for a NullInt struct.
 // If the int is not the zero value, the valid flag is set to true.
 // If the valid flag is not set, it defaults to true if the int is not the zero value.
+// Usage example:
+//
+//	ni := SetNullInt(5) // ni is {Int: 5, Valid: true}
+//	ni := SetNullInt(0) // ni is {Int: 0, Valid: false}
+//	ni := SetNullInt(5, false) // ni is {Int: 5, Valid: false}
 func SetNullInt(i int, valid ...bool) NullInt {
 	v := i != 0
 	if len(valid) > 0 {
