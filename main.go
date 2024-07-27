@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/labstack/echo/v4"
@@ -19,6 +20,8 @@ func main() {
 		log.Fatalf("Error reading config file, %s", err)
 	}
 
+	appConfig := config.LoadAppConfig()
+
 	dbConfig := config.NewDatabase()
 	db := dbConfig.GetDB()
 
@@ -29,5 +32,5 @@ func main() {
 	routes.RegisterV1AuthRoutes(e, db)
 
 	// Start server
-	e.Logger.Fatal(e.Start(":8080"))
+	e.Logger.Fatal(e.Start(fmt.Sprintf("%s:%s", appConfig.Host, appConfig.Port)))
 }

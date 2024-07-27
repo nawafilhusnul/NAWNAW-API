@@ -19,6 +19,7 @@ type Database struct {
 	MaxIdleConns    int
 	MaxOpenConns    int
 	ConnMaxLifetime time.Duration
+	Driver          string
 }
 
 // getDatabaseConfig reads the database configuration from the config file using viper
@@ -33,6 +34,7 @@ func getDatabaseConfig() *Database {
 		MaxIdleConns:    viper.GetInt("database.max_idle_conns"),
 		MaxOpenConns:    viper.GetInt("database.max_open_conns"),
 		ConnMaxLifetime: viper.GetDuration("database.conn_max_lifetime"),
+		Driver:          viper.GetString("database.driver"),
 	}
 }
 
