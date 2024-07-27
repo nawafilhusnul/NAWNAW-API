@@ -5,7 +5,7 @@ This project is a RESTful API built using the Echo framework in Go. It provides 
 ## Prerequisites
 
 Before you begin, ensure you have met the following requirements:
-- You have installed Go (1.16 or later).
+- You have installed Go (1.20 or later).
 - You have a running MySQL database.
 - You have installed `viper` for configuration management.
 - You have installed `gorm` for ORM.
