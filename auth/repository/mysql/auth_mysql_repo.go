@@ -5,27 +5,27 @@ import (
 	"net/http"
 
 	"github.com/nawafilhusnul/NAWNAW-API/common/constants"
-	"github.com/nawafilhusnul/NAWNAW-API/common/ctx"
+	cc "github.com/nawafilhusnul/NAWNAW-API/common/ctx"
 	"github.com/nawafilhusnul/NAWNAW-API/common/response"
 	"github.com/nawafilhusnul/NAWNAW-API/model"
 	"gorm.io/gorm"
 )
 
 type Repository interface {
-	Login(ctx *ctx.Ctx, identifier, password string) (*model.Auth, error)
-	Register(ctx *ctx.Ctx, user *model.Auth) error
-	GetOne(ctx *ctx.Ctx, id int) (*model.User, error)
-	FindUserRoles(ctx *ctx.Ctx, userID int) ([]model.Role, error)
-	FindUserPlatforms(ctx *ctx.Ctx, userID int) ([]model.Platform, error)
-	AssignDefaultPlatform(ctx *ctx.Ctx, userID int, platformSlugs ...string) error
-	AssignDefaultRole(ctx *ctx.Ctx, userID int, roleSlugs ...string) error
+	Login(ctx *cc.Ctx, identifier, password string) (*model.Auth, error)
+	Register(ctx *cc.Ctx, user *model.Auth) error
+	GetOne(ctx *cc.Ctx, id int) (*model.User, error)
+	FindUserRoles(ctx *cc.Ctx, userID int) ([]model.Role, error)
+	FindUserPlatforms(ctx *cc.Ctx, userID int) ([]model.Platform, error)
+	AssignDefaultPlatform(ctx *cc.Ctx, userID int, platformSlugs ...string) error
+	AssignDefaultRole(ctx *cc.Ctx, userID int, roleSlugs ...string) error
 }
 
 type repository struct {
 	db *gorm.DB
 }
 
-func (r *repository) checkTrx(ctx *ctx.Ctx) {
+func (r *repository) checkTrx(ctx *cc.Ctx) {
 	if ctx.Tx != nil {
 		r.db = ctx.Tx
 	}
@@ -35,7 +35,7 @@ func NewAuthMySQLRepo(db *gorm.DB) Repository {
 	return &repository{db: db}
 }
 
-func (r *repository) Login(ctx *ctx.Ctx, identifier, password string) (*model.Auth, error) {
+func (r *repository) Login(ctx *cc.Ctx, identifier, password string) (*model.Auth, error) {
 	user := &model.Auth{}
 	err := r.db.WithContext(ctx.RequestContext()).Where("email = ? OR phone = ?", identifier, identifier).First(&user).Error
 	if err != nil {
@@ -47,7 +47,7 @@ func (r *repository) Login(ctx *ctx.Ctx, identifier, password string) (*model.Au
 	return user, nil
 }
 
-func (r *repository) Register(ctx *ctx.Ctx, user *model.Auth) error {
+func (r *repository) Register(ctx *cc.Ctx, user *model.Auth) error {
 	r.checkTrx(ctx)
 
 	err := r.db.WithContext(ctx.RequestContext()).Create(&user).Error
@@ -61,7 +61,7 @@ func (r *repository) Register(ctx *ctx.Ctx, user *model.Auth) error {
 	return nil
 }
 
-func (r *repository) GetOne(ctx *ctx.Ctx, id int) (*model.User, error) {
+func (r *repository) GetOne(ctx *cc.Ctx, id int) (*model.User, error) {
 	user := &model.User{}
 	err := r.db.WithContext(ctx.RequestContext()).Where("id = ?", id).First(&user).Error
 	if err != nil {
@@ -73,7 +73,7 @@ func (r *repository) GetOne(ctx *ctx.Ctx, id int) (*model.User, error) {
 	return user, nil
 }
 
-func (r *repository) FindUserRoles(ctx *ctx.Ctx, userID int) ([]model.Role, error) {
+func (r *repository) FindUserRoles(ctx *cc.Ctx, userID int) ([]model.Role, error) {
 	roles := []model.Role{}
 	err := r.db.WithContext(ctx.RequestContext()).Table("roles").
 		Joins("JOIN user_roles ON user_roles.role_id = roles.id").
@@ -85,7 +85,7 @@ func (r *repository) FindUserRoles(ctx *ctx.Ctx, userID int) ([]model.Role, erro
 	return roles, nil
 }
 
-func (r *repository) FindUserPlatforms(ctx *ctx.Ctx, userID int) ([]model.Platform, error) {
+func (r *repository) FindUserPlatforms(ctx *cc.Ctx, userID int) ([]model.Platform, error) {
 	platforms := []model.Platform{}
 	err := r.db.WithContext(ctx.RequestContext()).Table("platforms").
 		Joins("JOIN user_platforms ON user_platforms.platform_id = platforms.id").
@@ -97,7 +97,7 @@ func (r *repository) FindUserPlatforms(ctx *ctx.Ctx, userID int) ([]model.Platfo
 	return platforms, nil
 }
 
-func (r *repository) AssignDefaultPlatform(ctx *ctx.Ctx, userID int, platformSlugs ...string) error {
+func (r *repository) AssignDefaultPlatform(ctx *cc.Ctx, userID int, platformSlugs ...string) error {
 	r.checkTrx(ctx)
 
 	userPlatforms := []model.UserPlatform{}
@@ -119,7 +119,7 @@ func (r *repository) AssignDefaultPlatform(ctx *ctx.Ctx, userID int, platformSlu
 	return nil
 }
 
-func (r *repository) AssignDefaultRole(ctx *ctx.Ctx, userID int, roleSlugs ...string) error {
+func (r *repository) AssignDefaultRole(ctx *cc.Ctx, userID int, roleSlugs ...string) error {
 	r.checkTrx(ctx)
 
 	userRoles := []model.UserRole{}

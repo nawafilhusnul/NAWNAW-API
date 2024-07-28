@@ -5,7 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	auth "github.com/nawafilhusnul/NAWNAW-API/auth/usecase"
-	"github.com/nawafilhusnul/NAWNAW-API/common/ctx"
+	cc "github.com/nawafilhusnul/NAWNAW-API/common/ctx"
 	"github.com/nawafilhusnul/NAWNAW-API/common/response"
 	"github.com/nawafilhusnul/NAWNAW-API/model"
 )
@@ -20,7 +20,7 @@ func NewAuthHandler(uc auth.Usecase) *handler {
 
 func (h *handler) Login() echo.HandlerFunc {
 	return echo.HandlerFunc(func(c echo.Context) error {
-		ctx := c.(*ctx.Ctx)
+		ctx := c.(*cc.Ctx)
 		req := &model.LoginRequest{}
 
 		if err := c.Bind(req); err != nil {
@@ -42,7 +42,7 @@ func (h *handler) Login() echo.HandlerFunc {
 
 func (h *handler) Register() echo.HandlerFunc {
 	return echo.HandlerFunc(func(c echo.Context) error {
-		ctx := c.(*ctx.Ctx)
+		ctx := c.(*cc.Ctx)
 		req := &model.Auth{}
 
 		if err := c.Bind(req); err != nil {
@@ -66,7 +66,7 @@ func (h *handler) Register() echo.HandlerFunc {
 
 func (h *handler) GetOne() echo.HandlerFunc {
 	return echo.HandlerFunc(func(c echo.Context) error {
-		ctx := c.(*ctx.Ctx)
+		ctx := c.(*cc.Ctx)
 
 		id := ctx.GetUser().UserID
 		user, err := h.uc.GetOne(ctx, id)
