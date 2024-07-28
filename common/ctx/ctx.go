@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
 )
 
 type ContextUser struct {
@@ -16,6 +17,7 @@ type ContextUser struct {
 type Ctx struct {
 	echo.Context
 	User *ContextUser
+	Tx   *gorm.DB
 }
 
 // SetUser sets the user information in the custom context.
