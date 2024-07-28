@@ -11,6 +11,7 @@ import (
 )
 
 type Repository interface {
+	Create(ctx *cc.Ctx, permission *model.Permission) error
 }
 
 type repository struct {
@@ -28,6 +29,8 @@ func NewPermissionMySQLRepo(db *gorm.DB) Repository {
 }
 
 func (r *repository) Create(ctx *cc.Ctx, permission *model.Permission) error {
+	r.checkTrx(ctx)
+
 	err := r.db.WithContext(ctx.RequestContext()).Create(permission).Error
 	if err != nil {
 		return response.NewError(http.StatusInternalServerError, constants.ErrorCodeInternalServerError, err.Error())

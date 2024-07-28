@@ -14,3 +14,8 @@ type Permission struct {
 func (p Permission) TableName() string {
 	return "permissions"
 }
+
+type CreatePermissionRequest struct {
+	Name     string `json:"name" validate:"required"`
+	ModuleID int    `json:"module_id" validate:"required"`
+}

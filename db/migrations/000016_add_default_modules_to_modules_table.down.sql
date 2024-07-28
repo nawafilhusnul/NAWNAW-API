@@ -1,0 +1,1 @@
+DELETE FROM `modules` WHERE `name` IN ('auths', 'modules', 'permissions', 'users', 'roles');
