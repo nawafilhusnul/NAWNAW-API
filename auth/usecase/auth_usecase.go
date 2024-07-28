@@ -27,7 +27,7 @@ type usecase struct {
 	db   *gorm.DB
 }
 
-func NewAuthUsecase(repo auth.Repository, db *gorm.DB) Usecase {
+func New(repo auth.Repository, db *gorm.DB) Usecase {
 	return &usecase{repo: repo, db: db}
 }
 
@@ -61,11 +61,23 @@ func (uc *usecase) Login(ctx *cc.Ctx, identifier, password, tz string) (*model.A
 	if err != nil {
 		return nil, response.NewError(http.StatusInternalServerError, constants.ErrorCodeInternalServerError, "Failed to get user platforms")
 	}
+
 	userPlatforms := make(map[string]bool)
 	for _, platform := range platforms {
 		userPlatforms[platform.Slug.String] = true
 	}
 	user.Platforms = userPlatforms
+
+	permissions, err := uc.repo.FindUserPermissions(ctx, int(user.ID))
+	if err != nil {
+		return nil, response.NewError(http.StatusInternalServerError, constants.ErrorCodeInternalServerError, "Failed to get user permissions")
+	}
+
+	userPermissions := make(map[string]bool)
+	for _, permission := range permissions {
+		userPermissions[permission.Slug.String] = true
+	}
+	user.Permissions = userPermissions
 
 	user.Timezone = tz
 

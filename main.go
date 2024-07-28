@@ -46,8 +46,10 @@ func main() {
 		ctx.NewCtx,
 	)
 
-	// Routes
-	routes.RegisterV1AuthRoutes(e, db)
+	// V1 Routes
+	v1 := e.Group("/api/v1")
+	routes.RegisterV1AuthRoutes(v1, db)
+	routes.RegisterV1ModuleRoutes(v1, db)
 
 	// Start server
 	e.Logger.Fatal(e.Start(fmt.Sprintf("%s:%s", appConfig.Host, appConfig.Port)))

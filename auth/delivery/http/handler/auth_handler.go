@@ -14,7 +14,7 @@ type handler struct {
 	uc auth.Usecase
 }
 
-func NewAuthHandler(uc auth.Usecase) *handler {
+func New(uc auth.Usecase) *handler {
 	return &handler{uc: uc}
 }
 

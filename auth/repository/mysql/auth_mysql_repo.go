@@ -17,6 +17,7 @@ type Repository interface {
 	GetOne(ctx *cc.Ctx, id int) (*model.User, error)
 	FindUserRoles(ctx *cc.Ctx, userID int) ([]model.Role, error)
 	FindUserPlatforms(ctx *cc.Ctx, userID int) ([]model.Platform, error)
+	FindUserPermissions(ctx *cc.Ctx, userID int) ([]model.Permission, error)
 	AssignDefaultPlatform(ctx *cc.Ctx, userID int, platformSlugs ...string) error
 	AssignDefaultRole(ctx *cc.Ctx, userID int, roleSlugs ...string) error
 }
@@ -36,6 +37,8 @@ func NewAuthMySQLRepo(db *gorm.DB) Repository {
 }
 
 func (r *repository) Login(ctx *cc.Ctx, identifier, password string) (*model.Auth, error) {
+	r.checkTrx(ctx)
+
 	user := &model.Auth{}
 	err := r.db.WithContext(ctx.RequestContext()).Where("email = ? OR phone = ?", identifier, identifier).First(&user).Error
 	if err != nil {
@@ -139,4 +142,17 @@ func (r *repository) AssignDefaultRole(ctx *cc.Ctx, userID int, roleSlugs ...str
 		return response.NewError(http.StatusInternalServerError, constants.ErrorCodeInternalServerError, "Failed to assign default role: "+err.Error())
 	}
 	return nil
+}
+
+func (r *repository) FindUserPermissions(ctx *cc.Ctx, userID int) ([]model.Permission, error) {
+	permissions := []model.Permission{}
+	err := r.db.WithContext(ctx.RequestContext()).Table("permissions").
+		Joins("JOIN role_permissions ON role_permissions.permission_id = permissions.id").
+		Joins("JOIN user_roles ON user_roles.role_id = role_permissions.role_id").
+		Where("user_roles.user_id = ?", userID).
+		Find(&permissions).Error
+	if err != nil {
+		return nil, response.NewError(http.StatusInternalServerError, constants.ErrorCodeInternalServerError, "Failed to get user permissions: "+err.Error())
+	}
+	return permissions, nil
 }

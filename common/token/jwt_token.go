@@ -20,13 +20,18 @@ func generateToken(user *model.Auth, expiredInSec int) (string, error) {
 		user.Roles = make(map[string]bool)
 	}
 
+	if user.Permissions == nil {
+		user.Permissions = make(map[string]bool)
+	}
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id":   user.ID,
-		"exp":       time.Now().Add(time.Second * time.Duration(expiredInSec)).Unix(),
-		"iat":       time.Now().Unix(),
-		"platforms": user.Platforms,
-		"roles":     user.Roles,
-		"timezone":  user.Timezone,
+		"user_id":     user.ID,
+		"exp":         time.Now().Add(time.Second * time.Duration(expiredInSec)).Unix(),
+		"iat":         time.Now().Unix(),
+		"platforms":   user.Platforms,
+		"permissions": user.Permissions,
+		"roles":       user.Roles,
+		"timezone":    user.Timezone,
 	})
 
 	return token.SignedString([]byte(vars.JWT_SECRET))

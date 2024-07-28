@@ -1,0 +1,1 @@
+UPDATE `platforms` SET `slug` = 'auths',`name` = 'Auths' WHERE `slug` = 'basic';

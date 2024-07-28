@@ -4,20 +4,26 @@ import (
 	"context"
 
 	"github.com/labstack/echo/v4"
+	"github.com/nawafilhusnul/NAWNAW-API/common/constants"
 	"gorm.io/gorm"
 )
 
 type ContextUser struct {
-	UserID    int
-	Roles     map[string]bool
-	Platforms map[string]bool
-	Timezone  string
+	UserID      int
+	Roles       map[string]bool
+	Platforms   map[string]bool
+	Permissions map[string]bool
+	Timezone    string
 }
 
 type Ctx struct {
 	echo.Context
 	User *ContextUser
 	Tx   *gorm.DB
+}
+
+func (c *Ctx) SkipCheck() bool {
+	return c.User.Roles[constants.RoleSuperAdmin]
 }
 
 // SetUser sets the user information in the custom context.

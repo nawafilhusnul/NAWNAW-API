@@ -21,14 +21,13 @@ import (
 //	}
 //
 // routes.RegisterV1AuthRoutes(e, db)
-func RegisterV1AuthRoutes(e *echo.Echo, db *gorm.DB) {
+func RegisterV1AuthRoutes(v1 *echo.Group, db *gorm.DB) {
 	authRepo := authRepo.NewAuthMySQLRepo(db)
-	authUsecase := authUsecase.NewAuthUsecase(authRepo, db)
-	authHandler := authHandler.NewAuthHandler(authUsecase)
+	authUsecase := authUsecase.New(authRepo, db)
+	authHandler := authHandler.New(authUsecase)
 
-	v1 := e.Group("/api/v1")
 	g := v1.Group("/auths")
-	g.POST("/login", authHandler.Login())                 // Login route for user authentication
-	g.POST("/register", authHandler.Register())           // Register route for new user registration
-	g.GET("", authHandler.GetOne(), middleware.Session()) // GetOne route to fetch user details with session middleware
+	g.POST("/login", authHandler.Login()).Name = "auths.Login"
+	g.POST("/register", authHandler.Register()).Name = "auths.Register"
+	g.GET("", authHandler.GetOne(), middleware.Session(), middleware.Platform(), middleware.Permission()).Name = "auths.GetOne"
 }

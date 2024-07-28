@@ -13,9 +13,10 @@ type Auth struct {
 	Password     datatypes.HashString `json:"password" gorm:"column:password" validate:"required" example:"* * * *"`
 	AccessToken  string               `json:"access_token" gorm:"-" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"`
 	RefreshToken string               `json:"refresh_token" gorm:"-" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"`
-	Platforms    map[string]bool      `json:"-" gorm:"-" example:"[web:true,mobile:false]"` // use for generate token
-	Roles        map[string]bool      `json:"-" gorm:"-" example:"[admin:true,user:false]"` // use for generate token
-	Timezone     string               `json:"-" gorm:"-" example:"Asia/Jakarta"`            // use for generate token
+	Platforms    map[string]bool      `json:"-" gorm:"-" example:"[web:true,mobile:false]"`     // use for generate token
+	Roles        map[string]bool      `json:"-" gorm:"-" example:"[admin:true,user:false]"`     // use for generate token
+	Permissions  map[string]bool      `json:"-" gorm:"-" example:"[login:true,register:false]"` // use for generate token
+	Timezone     string               `json:"-" gorm:"-" example:"Asia/Jakarta"`                // use for generate token
 }
 
 func (m Auth) TableName() string {

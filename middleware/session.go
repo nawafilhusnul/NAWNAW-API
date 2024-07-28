@@ -92,6 +92,17 @@ func setInfoToCtx(c echo.Context, tk string) (*ctx.Ctx, error) {
 		}
 	}
 
+	claimsPermissions, ok := (*claims)["permissions"].(map[string]interface{})
+	if !ok {
+		return nil, response.NewError(http.StatusUnauthorized, constants.ErrorCodeInvalidToken, "Missing roles")
+	}
+	permissions := make(map[string]bool)
+	for k, cp := range claimsPermissions {
+		if v, ok := cp.(bool); ok {
+			permissions[k] = v
+		}
+	}
+
 	timezone, ok := (*claims)["timezone"].(string)
 	if !ok || timezone == "" {
 		return nil, response.NewError(http.StatusUnauthorized, constants.ErrorCodeInvalidToken, "Missing timezone")
@@ -99,10 +110,11 @@ func setInfoToCtx(c echo.Context, tk string) (*ctx.Ctx, error) {
 
 	cc := c.(*ctx.Ctx)
 	cc.SetUser(&ctx.ContextUser{
-		UserID:    userID,
-		Roles:     roles,
-		Platforms: platforms,
-		Timezone:  timezone,
+		UserID:      userID,
+		Roles:       roles,
+		Platforms:   platforms,
+		Timezone:    timezone,
+		Permissions: permissions,
 	})
 
 	return cc, nil

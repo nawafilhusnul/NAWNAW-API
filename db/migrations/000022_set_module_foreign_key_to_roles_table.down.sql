@@ -1,0 +1,1 @@
+ALTER TABLE `roles` DROP FOREIGN KEY `fk_roles_module_id`;

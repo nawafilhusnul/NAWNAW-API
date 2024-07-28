@@ -1,0 +1,1 @@
+ALTER TABLE `roles` ADD COLUMN `module_id` INT AFTER `id`;

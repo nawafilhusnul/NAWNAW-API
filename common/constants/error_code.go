@@ -13,10 +13,16 @@ const (
 	ErrorCodeMissingToken      = "err.auth.10004"
 	ErrorCodeInvalidToken      = "err.auth.10005"
 	ErrorCodeInvalidTimezone   = "err.auth.10006"
+	ErrorCodeForbidden         = "err.auth.10007"
 )
 
 // user related error code
 const (
 	ErrorCodeUserAlreadyDeleted = "err.user.10001"
 	ErrorCodeUserNotActive      = "err.user.10002"
+)
+
+// module related error code
+const (
+	ErrorCodeModuleNotFound = "err.module.10001"
 )
