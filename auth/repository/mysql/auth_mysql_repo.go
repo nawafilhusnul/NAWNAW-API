@@ -15,6 +15,8 @@ type Repository interface {
 	Login(ctx *ctx.Ctx, identifier, password string) (*model.Auth, error)
 	Register(ctx *ctx.Ctx, user *model.Auth) error
 	GetOne(ctx *ctx.Ctx, id int) (*model.User, error)
+	FindUserRoles(ctx *ctx.Ctx, userID int) ([]model.Role, error)
+	FindUserPlatforms(ctx *ctx.Ctx, userID int) ([]model.Platform, error)
 }
 
 type repository struct {
@@ -59,4 +61,22 @@ func (r *repository) GetOne(ctx *ctx.Ctx, id int) (*model.User, error) {
 		return nil, response.NewError(http.StatusInternalServerError, constants.ErrorCodeInternalServerError, "Failed to get user: "+err.Error())
 	}
 	return user, nil
+}
+
+func (r *repository) FindUserRoles(ctx *ctx.Ctx, userID int) ([]model.Role, error) {
+	roles := []model.Role{}
+	err := r.db.WithContext(ctx.RequestContext()).Table("roles").
+		Joins("JOIN user_roles ON user_roles.role_id = roles.id").
+		Where("user_roles.user_id = ?", userID).
+		Find(&roles).Error
+	return roles, err
+}
+
+func (r *repository) FindUserPlatforms(ctx *ctx.Ctx, userID int) ([]model.Platform, error) {
+	platforms := []model.Platform{}
+	err := r.db.WithContext(ctx.RequestContext()).Table("platforms").
+		Joins("JOIN user_platforms ON user_platforms.platform_id = platforms.id").
+		Where("user_platforms.user_id = ?", userID).
+		Find(&platforms).Error
+	return platforms, err
 }

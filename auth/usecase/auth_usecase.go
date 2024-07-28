@@ -43,6 +43,27 @@ func (uc *usecase) Login(ctx *ctx.Ctx, identifier, password, tz string) (*model.
 		return nil, response.NewError(http.StatusUnauthorized, constants.ErrorCodeInvalidPassword, "Invalid password")
 	}
 
+	roles, err := uc.repo.FindUserRoles(ctx, int(user.ID))
+	if err != nil {
+		return nil, response.NewError(http.StatusInternalServerError, constants.ErrorCodeInternalServerError, "Failed to get user roles")
+	}
+
+	userRoles := make(map[string]bool)
+	for _, role := range roles {
+		userRoles[role.Slug.String] = true
+	}
+	user.Roles = userRoles
+
+	platforms, err := uc.repo.FindUserPlatforms(ctx, int(user.ID))
+	if err != nil {
+		return nil, response.NewError(http.StatusInternalServerError, constants.ErrorCodeInternalServerError, "Failed to get user platforms")
+	}
+	userPlatforms := make(map[string]bool)
+	for _, platform := range platforms {
+		userPlatforms[platform.Slug.String] = true
+	}
+	user.Platforms = userPlatforms
+
 	user.Timezone = tz
 
 	accessToken, err := token.GenerateAccessToken(user)

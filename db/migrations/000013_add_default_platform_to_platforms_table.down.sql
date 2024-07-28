@@ -1,0 +1,1 @@
+DELETE FROM `platforms` WHERE `slug` = 'basic';

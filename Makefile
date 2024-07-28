@@ -29,5 +29,26 @@ migrate:
 	migrate create -ext sql -dir $(MIGRATION_DIR) -seq $$seq
 
 migrate-up:
-	echo "running ... migrate -source file://$(MIGRATION_DIR) -database $(MYSQL_CONN_STRING) up"; \
-	migrate -source file://$(MIGRATION_DIR) -database $(MYSQL_CONN_STRING) up
+	@read -p "Enter migration step: " step; \
+	if [ -z "$$step" ]; then \
+		echo "running ... migrate -source file://$(MIGRATION_DIR) -database $(MYSQL_CONN_STRING) up"; \
+		migrate -source file://$(MIGRATION_DIR) -database $(MYSQL_CONN_STRING) up; \
+	else \
+		echo "running ... migrate -source file://$(MIGRATION_DIR) -database $(MYSQL_CONN_STRING) up $$step"; \
+		migrate -source file://$(MIGRATION_DIR) -database $(MYSQL_CONN_STRING) up $$step; \
+	fi
+
+migrate-down:
+	@read -p "Enter migration step: " step; \
+	if [ -z "$$step" ]; then \
+		echo "running ... migrate -source file://$(MIGRATION_DIR) -database $(MYSQL_CONN_STRING) down"; \
+		migrate -source file://$(MIGRATION_DIR) -database $(MYSQL_CONN_STRING) down; \
+	else \
+		echo "running ... migrate -source file://$(MIGRATION_DIR) -database $(MYSQL_CONN_STRING) down $$step"; \
+		migrate -source file://$(MIGRATION_DIR) -database $(MYSQL_CONN_STRING) down $$step; \
+	fi
+
+migrate-clean:
+	@read -p "Enter migration version: " version; \
+	echo "running ... migrate -source file://$(MIGRATION_DIR) -database $(MYSQL_CONN_STRING) force $$version"; \
+	migrate -source file://$(MIGRATION_DIR) -database $(MYSQL_CONN_STRING) force $$version

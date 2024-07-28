@@ -1,0 +1,1 @@
+INSERT INTO `platforms` (`name`, `slug`) VALUES ('Basic', 'basic');

@@ -9,3 +9,7 @@ type Permission struct {
 	Module datatypes.NullString `json:"module" gorm:"column:module" example:"auth"`
 	DefaultModel
 }
+
+func (p Permission) TableName() string {
+	return "permissions"
+}

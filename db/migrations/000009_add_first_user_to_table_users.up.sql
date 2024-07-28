@@ -1,0 +1,26 @@
+INSERT INTO big_app_staging.users 
+  (email, 
+  name, 
+  phone, 
+  password, 
+  created_at, 
+  created_by, 
+  updated_at, 
+  updated_by, 
+  is_deleted, 
+  is_activated, 
+  deleted_at, 
+  deleted_by) 
+VALUES
+	('husnulnawafil27@gmail.com', 
+  'Husnul Nawafil', 
+  '+6282249907755', 
+  '$2a$10$iXwpPn.wytmQnc9icucwH.CyREnve0DjYgyShwLArhQ9JBl.e.kfK', 
+  '2024-07-28 09:29:11', 
+  0, 
+  '2024-07-28 09:39:00', 
+  0, 
+  0, 
+  1, 
+  NULL, 
+  NULL);

@@ -1,0 +1,1 @@
+DELETE FROM users WHERE email = 'husnulnawafil27@gmail.com' AND phone = '+6282249907755';

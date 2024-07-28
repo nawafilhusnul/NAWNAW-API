@@ -1,0 +1,1 @@
+DELETE FROM roles WHERE slug IN ('admin', 'super-admin', 'guest');

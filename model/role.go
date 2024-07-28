@@ -7,4 +7,9 @@ type Role struct {
 	Name   datatypes.NullString `json:"name" gorm:"column:name" example:"Admin"`
 	Slug   datatypes.NullString `json:"slug" gorm:"column:slug" example:"admin"`
 	Module datatypes.NullString `json:"module" gorm:"column:module" example:"auth"`
+	DefaultModel
+}
+
+func (r Role) TableName() string {
+	return "roles"
 }
