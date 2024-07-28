@@ -6,7 +6,7 @@ import (
 )
 
 type Auth struct {
-	ID           datatypes.ID         `json:"id" gorm:"column:id;primary_key" example:"$2a$10$/zQq3zQq3zQq3zQq3zQq3zQq3zQq3zQq3zQq3zQq3zQq3zQq3zQq3zQq3zQq3zQq3zQq3"`
+	ID           datatypes.ID         `json:"id" gorm:"column:id;primary_key" example:"YTFiMmMzZDRlNWY2ZzdoOGk5ajBrMWwybTNuNG81cDYyOQ=="`
 	Email        datatypes.NullString `json:"email" gorm:"column:email" validate:"required,email" example:"email@email.com"`
 	Name         datatypes.NullString `json:"name" gorm:"column:name" validate:"required" example:"John Doe"`
 	Phone        datatypes.NullString `json:"phone" gorm:"column:phone" validate:"required" example:"+6281234567890"`
