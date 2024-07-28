@@ -11,7 +11,9 @@ import (
 	"github.com/nawafilhusnul/NAWNAW-API/common/helper"
 	"github.com/nawafilhusnul/NAWNAW-API/common/response"
 	"github.com/nawafilhusnul/NAWNAW-API/common/token"
+	"github.com/nawafilhusnul/NAWNAW-API/common/trxmanager"
 	"github.com/nawafilhusnul/NAWNAW-API/model"
+	"gorm.io/gorm"
 )
 
 type Usecase interface {
@@ -22,14 +24,15 @@ type Usecase interface {
 
 type usecase struct {
 	repo auth.Repository
+	db   *gorm.DB
 }
 
-func NewAuthUsecase(repo auth.Repository) Usecase {
-	return &usecase{repo: repo}
+func NewAuthUsecase(repo auth.Repository, db *gorm.DB) Usecase {
+	return &usecase{repo: repo, db: db}
 }
 
-func (uc *usecase) Login(ctx *ctx.Ctx, identifier, password, tz string) (*model.Auth, error) {
-	user, err := uc.repo.Login(ctx, identifier, password)
+func (uc *usecase) Login(c *ctx.Ctx, identifier, password, tz string) (*model.Auth, error) {
+	user, err := uc.repo.Login(c, identifier, password)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +46,7 @@ func (uc *usecase) Login(ctx *ctx.Ctx, identifier, password, tz string) (*model.
 		return nil, response.NewError(http.StatusUnauthorized, constants.ErrorCodeInvalidPassword, "Invalid password")
 	}
 
-	roles, err := uc.repo.FindUserRoles(ctx, int(user.ID))
+	roles, err := uc.repo.FindUserRoles(c, int(user.ID))
 	if err != nil {
 		return nil, response.NewError(http.StatusInternalServerError, constants.ErrorCodeInternalServerError, "Failed to get user roles")
 	}
@@ -54,7 +57,7 @@ func (uc *usecase) Login(ctx *ctx.Ctx, identifier, password, tz string) (*model.
 	}
 	user.Roles = userRoles
 
-	platforms, err := uc.repo.FindUserPlatforms(ctx, int(user.ID))
+	platforms, err := uc.repo.FindUserPlatforms(c, int(user.ID))
 	if err != nil {
 		return nil, response.NewError(http.StatusInternalServerError, constants.ErrorCodeInternalServerError, "Failed to get user platforms")
 	}
@@ -82,13 +85,35 @@ func (uc *usecase) Login(ctx *ctx.Ctx, identifier, password, tz string) (*model.
 	return user, nil
 }
 
-func (uc *usecase) Register(ctx *ctx.Ctx, user *model.Auth) error {
+func (uc *usecase) Register(c *ctx.Ctx, user *model.Auth) error {
 	hashedPassword, err := helper.HashPassword(string(user.Password))
 	if err != nil {
 		return response.NewError(http.StatusBadRequest, constants.ErrorCodeInvalidPassword, "Failed to hash password")
 	}
 	user.Password = datatypes.HashString(hashedPassword)
-	return uc.repo.Register(ctx, user)
+
+	err = trxmanager.New(uc.db).WithTrx(c, func(c *ctx.Ctx) error {
+		err = uc.repo.Register(c, user)
+		if err != nil {
+			return err
+		}
+
+		err = uc.repo.AssignDefaultPlatform(c, int(user.ID), constants.DefaultPlatformSlugs...)
+		if err != nil {
+			return err
+		}
+
+		err = uc.repo.AssignDefaultRole(c, int(user.ID), constants.DefaultRoleSlugs...)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (uc *usecase) GetOne(ctx *ctx.Ctx, id int) (*model.User, error) {

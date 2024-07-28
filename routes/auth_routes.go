@@ -23,7 +23,7 @@ import (
 // routes.RegisterV1AuthRoutes(e, db)
 func RegisterV1AuthRoutes(e *echo.Echo, db *gorm.DB) {
 	authRepo := authRepo.NewAuthMySQLRepo(db)
-	authUsecase := authUsecase.NewAuthUsecase(authRepo)
+	authUsecase := authUsecase.NewAuthUsecase(authRepo, db)
 	authHandler := authHandler.NewAuthHandler(authUsecase)
 
 	v1 := e.Group("/api/v1")

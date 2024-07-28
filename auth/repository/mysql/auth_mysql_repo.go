@@ -17,10 +17,18 @@ type Repository interface {
 	GetOne(ctx *ctx.Ctx, id int) (*model.User, error)
 	FindUserRoles(ctx *ctx.Ctx, userID int) ([]model.Role, error)
 	FindUserPlatforms(ctx *ctx.Ctx, userID int) ([]model.Platform, error)
+	AssignDefaultPlatform(ctx *ctx.Ctx, userID int, platformSlugs ...string) error
+	AssignDefaultRole(ctx *ctx.Ctx, userID int, roleSlugs ...string) error
 }
 
 type repository struct {
 	db *gorm.DB
+}
+
+func (r *repository) checkTrx(ctx *ctx.Ctx) {
+	if ctx.Tx != nil {
+		r.db = ctx.Tx
+	}
 }
 
 func NewAuthMySQLRepo(db *gorm.DB) Repository {
@@ -40,6 +48,8 @@ func (r *repository) Login(ctx *ctx.Ctx, identifier, password string) (*model.Au
 }
 
 func (r *repository) Register(ctx *ctx.Ctx, user *model.Auth) error {
+	r.checkTrx(ctx)
+
 	err := r.db.WithContext(ctx.RequestContext()).Create(&user).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
@@ -69,7 +79,10 @@ func (r *repository) FindUserRoles(ctx *ctx.Ctx, userID int) ([]model.Role, erro
 		Joins("JOIN user_roles ON user_roles.role_id = roles.id").
 		Where("user_roles.user_id = ?", userID).
 		Find(&roles).Error
-	return roles, err
+	if err != nil {
+		return nil, response.NewError(http.StatusInternalServerError, constants.ErrorCodeInternalServerError, "Failed to get user roles: "+err.Error())
+	}
+	return roles, nil
 }
 
 func (r *repository) FindUserPlatforms(ctx *ctx.Ctx, userID int) ([]model.Platform, error) {
@@ -78,5 +91,52 @@ func (r *repository) FindUserPlatforms(ctx *ctx.Ctx, userID int) ([]model.Platfo
 		Joins("JOIN user_platforms ON user_platforms.platform_id = platforms.id").
 		Where("user_platforms.user_id = ?", userID).
 		Find(&platforms).Error
-	return platforms, err
+	if err != nil {
+		return nil, response.NewError(http.StatusInternalServerError, constants.ErrorCodeInternalServerError, "Failed to get user platforms: "+err.Error())
+	}
+	return platforms, nil
+}
+
+func (r *repository) AssignDefaultPlatform(ctx *ctx.Ctx, userID int, platformSlugs ...string) error {
+	r.checkTrx(ctx)
+
+	userPlatforms := []model.UserPlatform{}
+	for _, platformSlug := range platformSlugs {
+		platform := model.Platform{}
+		err := r.db.WithContext(ctx.RequestContext()).Where("slug = ?", platformSlug).First(&platform).Error
+		if err != nil {
+			return response.NewError(http.StatusInternalServerError, constants.ErrorCodeInternalServerError, "Failed to get platform: "+err.Error())
+		}
+		userPlatforms = append(userPlatforms, model.UserPlatform{
+			UserID:     userID,
+			PlatformID: platform.ID,
+		})
+	}
+	err := r.db.WithContext(ctx.RequestContext()).Create(&userPlatforms).Error
+	if err != nil {
+		return response.NewError(http.StatusInternalServerError, constants.ErrorCodeInternalServerError, "Failed to assign default platform: "+err.Error())
+	}
+	return nil
+}
+
+func (r *repository) AssignDefaultRole(ctx *ctx.Ctx, userID int, roleSlugs ...string) error {
+	r.checkTrx(ctx)
+
+	userRoles := []model.UserRole{}
+	for _, roleSlug := range roleSlugs {
+		role := model.Role{}
+		err := r.db.WithContext(ctx.RequestContext()).Where("slug = ?", roleSlug).First(&role).Error
+		if err != nil {
+			return response.NewError(http.StatusInternalServerError, constants.ErrorCodeInternalServerError, "Failed to get role: "+err.Error())
+		}
+		userRoles = append(userRoles, model.UserRole{
+			UserID: userID,
+			RoleID: int(role.ID),
+		})
+	}
+	err := r.db.WithContext(ctx.RequestContext()).Create(&userRoles).Error
+	if err != nil {
+		return response.NewError(http.StatusInternalServerError, constants.ErrorCodeInternalServerError, "Failed to assign default role: "+err.Error())
+	}
+	return nil
 }
